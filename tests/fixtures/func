@@ -1,0 +1,1 @@
+{"code": "d\u0001\u0000S", "freevars": [], "names": [], "consts": [null, "Hello World"], "firstlineno": 13, "name": "_fn", "nlocals": 0, "argcount": 0, "filename": "/home/lrossetti/Projects/sumatra/python-runner/tests/accept/test_cli.py", "varnames": [], "flags": 83, "cellvars": [], "lnotab": "\u0000\u0001", "stacksize": 1}

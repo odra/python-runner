@@ -2,3 +2,7 @@ bin/purunnerc
 .cache/
 *pyc
 __pycache__
+.eggs
+build/
+dist/
+*.egg-info/

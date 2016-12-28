@@ -32,8 +32,8 @@ def call(**kwargs):
   return func(**params)
 
 
-def run(flags=sys.argv):
-  args = parser.parse_args(flags)
+def run(*args, **kwargs):
+  args = parser.parse_args(*args, **kwargs)
   params = {
   'params': args.params,
   'file': args.file,

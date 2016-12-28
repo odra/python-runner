@@ -1,4 +1,4 @@
-bin/purunnerc
+bin/pyrunnerc
 .cache/
 *pyc
 __pycache__

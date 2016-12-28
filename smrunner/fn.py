@@ -9,8 +9,10 @@ from schematics.types.compound import ModelType
 from smrunner.helpers.schema import BytesType, TupleType, LazyDictType
 from smrunner.helpers import encoders
 
-from smrunner.errors import RuntimeError, ParseError
+from smrunner import errors
 
+
+CODE_HELPER_PROPS = ('defaults',)
 
 class Code(Model):
   argcount = IntType(required=True)
@@ -39,20 +41,26 @@ class Code(Model):
 
   @classmethod
   def from_json(cls, data):
-    parsed_data = json.loads(data, object_hook=encoders.json_code_hook)
+    try:
+      parsed_data = json.loads(data, object_hook=encoders.json_code_hook)
+    except ValueError:
+      raise errors.ParseError()
     self = cls(raw_data=parsed_data)
     return self
 
   @classmethod
   def from_file(cls, path):
-    return cls.from_json(open(path).read())
+    try:
+      return cls.from_json(open(path).read())
+    except IOError as e:
+      raise errors.FunctionNotFoundError(path)
 
   def parse_args(self, spec):
     if spec.defaults is not None:
       self.defaults = spec.defaults
 
-  def as_dict(self):
-    return {
+  def as_dict(self, only_code=True):
+    data = {
       'argcount': self.argcount,
       'nlocals': self.nlocals,
       'stacksize': self.stacksize,
@@ -68,9 +76,12 @@ class Code(Model):
       'freevars': self.freevars,
       'cellvars': self.cellvars
     }
+    if only_code is False:
+      [data.update({key:getattr(self, key)}) for key in CODE_HELPER_PROPS]
+    return data
 
-  def as_json(self):
-    return json.dumps(self.as_dict())
+  def as_json(self, only_code=True):
+    return json.dumps(self.as_dict(), only_code)
 
   def as_code(self):
     filename = self.filename
@@ -97,7 +108,7 @@ class Code(Model):
         self.cellvars
       )
     except TypeError as e:
-      raise ParseError()
+      raise errors.ParseError()
 
 
 class Function(Model):
@@ -140,4 +151,4 @@ class Function(Model):
         'args': args,
         'kwargs': kwargs
       }
-      raise RuntimeError(kw['name'], params, e.message)
+      raise errors.RuntimeError(kw['name'], params, e.message)

@@ -17,8 +17,16 @@ def func():
 
 
 @pytest.fixture
+def func1():
+  def _fn(obj):
+    return 'Hello %s' % obj
+  return _fn
+
+
+@pytest.fixture
 def parser():
   return pyrunner.parser
+
 
 @pytest.fixture
 def func_path():
@@ -35,10 +43,16 @@ def test_empty_cli(parser):
 
 def test_cli_from_data(func, capsys):
   code = fn.Code.from_function(func)
-  args = pyrunner.run(['--data', code.as_json()])
+  args = pyrunner.run(['--data', code.as_json(only_code=False)])
   (out, err) = capsys.readouterr()
   assert out == 'Hello World\n'
 
+
+def test_cli_error_from_data(func1, capsys):
+  code = fn.Code.from_function(func1)
+  args = pyrunner.run(['--data', code.as_json(only_code=False)])
+  (out, err) = capsys.readouterr()
+  assert err == 'Parse error.\n'
 
 def test_cli_from_file(func_path, capsys):
   args = pyrunner.run(['--file', func_path])

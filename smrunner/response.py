@@ -14,23 +14,21 @@ class Error(Model):
 
 class Response(Model):
   jsonrpc = StringType(required=True, default='2.0')
-  _id = StringType()
   error = ModelType(Error)
   result = DynamicType()
 
   @classmethod
   def as_result(cls, _id=None, data=None):
-    return cls(raw_data={'_id': _id, 'result': data})
+    return cls(raw_data={'result': data})
 
   @classmethod
   def as_error(cls, code, message, data=None, _id=None):
     err = Error(raw_data={'code': code, 'message': message, 'data': data})
-    return cls(raw_data={'_id': _id, 'error': err})
+    return cls(raw_data={'error': err})
 
   def as_dict(self):
     data = {
-      'jsonrpc': self.jsonrpc,
-      'id': self._id
+      'jsonrpc': self.jsonrpc
     }
     if self.error is not None:
       data['error'] = {

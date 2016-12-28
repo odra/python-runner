@@ -3,6 +3,19 @@
 Runs python functions based on code objects.
 
 
+## Tests
+
+Install requirements:
+
+```
+pip install -U -r requirements.txt
+```
+
+```
+py.test -s
+```
+
+
 ## License
 
 Copyright 2016 Leonardo Rossetti <me@lrossetticom>

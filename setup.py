@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
   name='sumatra python function runner',
-  version='0.0.5',
+  version='0.0.6',
   description='Runs function code based using code objects',
   author='Sumatra',
   packages=find_packages(),

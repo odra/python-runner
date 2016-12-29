@@ -1,6 +1,7 @@
 import os
 import imp
 import json
+import base64
 
 import pytest
 
@@ -44,6 +45,13 @@ def test_empty_cli(parser):
 def test_cli_from_data(func, capsys):
   code = fn.Code.from_function(func)
   args = pyrunner.run(['--data', code.as_json(only_code=False)])
+  (out, err) = capsys.readouterr()
+  assert out == 'Hello World\n'
+
+
+def test_cli_from_b64_data(func, capsys):
+  code = fn.Code.from_function(func)
+  args = pyrunner.run(['--data', base64.b64encode(code.as_json(only_code=False)), '--encode'])
   (out, err) = capsys.readouterr()
   assert out == 'Hello World\n'
 

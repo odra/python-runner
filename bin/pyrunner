@@ -2,6 +2,7 @@
 import argparse
 import json
 import sys
+import base64
 
 from smrunner import fn, errors, response
 
@@ -10,6 +11,7 @@ parser = argparse.ArgumentParser(description='runs a function from file or json 
 parser.add_argument('-j', '--json', action='store_true', default=False, help='flag to return response as json')
 parser.add_argument('-p', '--params', default='{}', help='params to be used in the function, in json format (array or dict)')
 parser.add_argument('-d', '--data', help='python code object data to be used in json format')
+parser.add_argument('-e', '--encode', action='store_true', default=False, help='hash alrorithm to decode data')
 parser.add_argument('-f', '--file', help='function file to be imported')
 
 
@@ -17,9 +19,12 @@ def call(**kwargs):
   params = kwargs.get('params', '{}')
   file = kwargs.get('file')
   data = kwargs.get('data')
+  encode = kwargs.get('encode')
   fn_name = None
   func = None
   if data is not None:
+    if encode is True:
+      data = base64.b64decode(data)
     code = fn.Code.from_json(data)
     func = fn.Function.from_code(code)
   if file is not None:
@@ -37,7 +42,8 @@ def run(*args, **kwargs):
   params = {
   'params': json.loads(args.params),
   'file': args.file,
-  'data': args.data
+  'data': args.data,
+  'encode': args.encode
   }
   try:
     result = call(**params)

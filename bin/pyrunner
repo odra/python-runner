@@ -24,7 +24,7 @@ def call(**kwargs):
   func = None
   if data is not None:
     if encode is True:
-      data = base64.b64decode(data)
+      data = base64.b64decode(data).decode('utf8')
     code = fn.Code.from_json(data)
     func = fn.Function.from_code(code)
   if file is not None:

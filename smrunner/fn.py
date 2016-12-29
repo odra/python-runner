@@ -43,7 +43,7 @@ class Code(Model):
   def from_json(cls, data):
     try:
       parsed_data = json.loads(data, object_hook=encoders.json_code_hook)
-    except ValueError:
+    except ValueError as e:
       raise errors.ParseError()
     self = cls(raw_data=parsed_data)
     return self

@@ -37,7 +37,7 @@ def func_path():
 def test_empty_cli(parser):
   args = parser.parse_args([])
   assert args.json == False
-  assert args.params == '{}'
+  assert args.params is None
   assert args.file is None
   assert args.data is None
 
@@ -56,11 +56,22 @@ def test_cli_from_b64_data(func, capsys):
   assert out == 'Hello World\n'
 
 
+def test_cli_from_b64_arg_data(func1, capsys):
+  code = fn.Code.from_function(func1)
+  params = base64.b64encode(json.dumps(['Bob']))
+  args = pyrunner.run(['--params', params, '--data', base64.b64encode(code.as_json(only_code=False)), '--encode'])
+  (out, err) = capsys.readouterr()
+  assert err == ''
+  assert out == 'Hello Bob\n'
+
+
+
 def test_cli_error_from_data(func1, capsys):
   code = fn.Code.from_function(func1)
   args = pyrunner.run(['--data', code.as_json(only_code=False)])
   (out, err) = capsys.readouterr()
-  assert err == 'Parse error.\n'
+  assert err == 'Runtime error.\n'
+  assert out == ''
 
 
 def test_cli_from_file(func_path, capsys):

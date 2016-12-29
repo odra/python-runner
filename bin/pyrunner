@@ -8,13 +8,13 @@ from smrunner import fn, errors, response
 
 parser = argparse.ArgumentParser(description='runs a function from file or json data')
 parser.add_argument('-j', '--json', action='store_true', default=False, help='flag to return response as json')
-parser.add_argument('-p', '--params', default=dict(), help='params to be used in the function, in json format (array or dict)')
+parser.add_argument('-p', '--params', default='{}', help='params to be used in the function, in json format (array or dict)')
 parser.add_argument('-d', '--data', help='python code object data to be used in json format')
 parser.add_argument('-f', '--file', help='function file to be imported')
 
 
 def call(**kwargs):
-  params = kwargs.get('params', {})
+  params = kwargs.get('params', '{}')
   file = kwargs.get('file')
   data = kwargs.get('data')
   fn_name = None
@@ -35,7 +35,7 @@ def call(**kwargs):
 def run(*args, **kwargs):
   args = parser.parse_args(*args, **kwargs)
   params = {
-  'params': args.params,
+  'params': json.loads(args.params),
   'file': args.file,
   'data': args.data
   }

@@ -36,7 +36,7 @@ def func_path():
 def test_empty_cli(parser):
   args = parser.parse_args([])
   assert args.json == False
-  assert len(args.params) == 0
+  assert args.params == '{}'
   assert args.file is None
   assert args.data is None
 
@@ -53,6 +53,7 @@ def test_cli_error_from_data(func1, capsys):
   args = pyrunner.run(['--data', code.as_json(only_code=False)])
   (out, err) = capsys.readouterr()
   assert err == 'Parse error.\n'
+
 
 def test_cli_from_file(func_path, capsys):
   args = pyrunner.run(['--file', func_path])

@@ -16,6 +16,7 @@ CODE_HELPER_PROPS = ('defaults',)
 
 class Code(Model):
   argcount = IntType(required=True)
+  kwonlyargcount = IntType(default=0)
   cellvars = TupleType(required=True)
   code = BytesType(required=True)
   consts = TupleType(required=True)
@@ -62,6 +63,7 @@ class Code(Model):
   def as_dict(self, only_code=True):
     data = {
       'argcount': self.argcount,
+      'kwonlyargcount': self.kwonlyargcount,
       'nlocals': self.nlocals,
       'stacksize': self.stacksize,
       'flags': self.flags,
@@ -69,8 +71,8 @@ class Code(Model):
       'consts': self.consts,
       'names': self.names,
       'varnames': self.varnames,
-      'filename': self.filename.encode('utf8'),
-      'name': self.name.encode('utf8'),
+      'filename': self.filename,
+      'name': self.name,
       'firstlineno': self.firstlineno,
       'lnotab': self.lnotab,
       'freevars': self.freevars,
@@ -86,13 +88,10 @@ class Code(Model):
   def as_code(self):
     filename = self.filename
     name = self.name
-    if type(name) is unicode:
-      name = name.encode('utf8')
-    if type(filename) is unicode:
-      filename = filename.encode('utf8')
     try:
       return types.CodeType(
         self.argcount,
+        self.kwonlyargcount,
         self.nlocals,
         self.stacksize,
         self.flags,
@@ -139,7 +138,7 @@ class Function(Model):
 
   def run(self, *args, **kwargs):
     kw = {
-      'name': self.code.name.encode('utf8')
+      'name': self.code.name
     }
     if self.code.defaults is not None:
       kw['argdefs'] = self.code.defaults
@@ -151,4 +150,4 @@ class Function(Model):
         'args': args,
         'kwargs': kwargs
       }
-      raise errors.RuntimeError(kw['name'], params, e.message)
+      raise errors.RuntimeError(kw['name'], params, str(e))

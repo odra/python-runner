@@ -10,7 +10,7 @@ class TupleType(BaseType):
 
 class BytesType(BaseType):
   def validate_bytes(self, value):
-    if not type(value) in (str, unicode, bytes):
+    if not type(value) in (str, bytes):
       raise ValidationError('Type must be a valid bytes format')
 
 

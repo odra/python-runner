@@ -51,15 +51,15 @@ def test_cli_from_data(func, capsys):
 
 def test_cli_from_b64_data(func, capsys):
   code = fn.Code.from_function(func)
-  args = pyrunner.run(['--data', base64.b64encode(code.as_json(only_code=False)), '--encode'])
+  args = pyrunner.run(['--data', base64.b64encode(code.as_json(only_code=False).encode('utf8')).decode('utf8'), '--encode'])
   (out, err) = capsys.readouterr()
   assert out == 'Hello World\n'
 
 
 def test_cli_from_b64_arg_data(func1, capsys):
   code = fn.Code.from_function(func1)
-  params = base64.b64encode(json.dumps(['Bob']))
-  args = pyrunner.run(['--params', params, '--data', base64.b64encode(code.as_json(only_code=False)), '--encode'])
+  params = base64.b64encode(json.dumps(['Bob']).encode('utf8')).decode('utf8')
+  args = pyrunner.run(['--params', params, '--data', base64.b64encode(code.as_json(only_code=False).encode('utf8')).decode('utf8'), '--encode'])
   (out, err) = capsys.readouterr()
   assert err == ''
   assert out == 'Hello Bob\n'

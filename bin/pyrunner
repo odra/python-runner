@@ -23,12 +23,12 @@ def call(**kwargs):
   fn_name = None
   func = None
   if params is not None and encode is True:
-    params = base64.b64decode(params)
+    params = base64.b64decode(params.encode('utf8')).decode('utf8')
   if params is None:
     params = '{}'
   if data is not None:
     if encode is True:
-      data = base64.b64decode(data)
+      data = base64.b64decode(data.encode('utf8')).decode('utf8')
     code = fn.Code.from_json(data)
     func = fn.Function.from_code(code)
   if file is not None:

@@ -83,11 +83,17 @@ class Code(Model):
     return data
 
   def as_json(self, only_code=True):
-    return json.dumps(self.as_dict(), only_code)
+    BYTES_PROPS = ('code', 'lnotab')
+    data = self.as_dict()
+    for bp in BYTES_PROPS:
+      data[bp] = data[bp].decode('utf8')
+    return json.dumps(data, only_code)
 
   def as_code(self):
-    filename = self.filename
-    name = self.name
+    if type(self.code) is str:
+      self.code = self.code.encode('utf8')
+    if type(self.lnotab) is str:
+      self.lnotab = self.lnotab.encode('utf8')
     try:
       return types.CodeType(
         self.argcount,
@@ -99,8 +105,8 @@ class Code(Model):
         self.consts,
         self.names,
         self.varnames,
-        filename,
-        name,
+        self.filename,
+        self.name,
         self.firstlineno,
         self.lnotab,
         self.freevars,

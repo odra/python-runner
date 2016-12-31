@@ -10,8 +10,8 @@ def fix_tuple(s):
 def json_code_hook(data):
   for (k, v) in data.items():
     if type(v) is list:
-      data[k] = tuple([i for i in v])
-    if type(v) is unicode:
-      data[k] = v.encode('utf8')
+      data[k] = tuple(v)
+    #if type(v) is unicode:
+    #  data[k] = v.encode('utf8')
   return data
 

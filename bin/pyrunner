@@ -6,7 +6,7 @@ import base64
 
 from smrunner import fn, errors, response
 
-
+  
 parser = argparse.ArgumentParser(description='runs a function from file or json data')
 parser.add_argument('-j', '--json', action='store_true', default=False, help='flag to return response as json')
 parser.add_argument('-p', '--params', help='params to be used in the function, in json format (array or dict)')
@@ -56,7 +56,7 @@ def run(*args, **kwargs):
     if args.json is False:
       sys.stderr.write('%s\n' % e.message)
     else:
-      sys.sterr.write('%s\n' %response.Response.as_result(code=e.code, message=e.message, data=e.data).as_json())
+      sys.stderr.write('%s\n' %response.Response.as_error(code=e.code, message=e.message, data=e.data).as_json())
     return
   if args.json is False:
     sys.stdout.write('%s\n' % result)

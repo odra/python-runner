@@ -41,7 +41,7 @@ def test_data_message(random_error_data):
 
 
 def test_random_error_json(random_error_data, random_error_json):
-  assert cmp(random_error_data, json.loads(random_error_json)) == 0
+  assert random_error_data == json.loads(random_error_json)
 
 
 def test_parse_error():

@@ -5,8 +5,9 @@ import sys
 import base64
 
 from smrunner import fn, errors, response
+from smrunner.helpers import encoders
 
-
+  
 parser = argparse.ArgumentParser(description='runs a function from file or json data')
 parser.add_argument('-j', '--json', action='store_true', default=False, help='flag to return response as json')
 parser.add_argument('-p', '--params', help='params to be used in the function, in json format (array or dict)')
@@ -23,12 +24,12 @@ def call(**kwargs):
   fn_name = None
   func = None
   if params is not None and encode is True:
-    params = base64.b64decode(params)
+    params = encoders.decode(params)
   if params is None:
     params = '{}'
   if data is not None:
     if encode is True:
-      data = base64.b64decode(data)
+      data = encoders.decode(data)
     code = fn.Code.from_json(data)
     func = fn.Function.from_code(code)
   if file is not None:
@@ -45,10 +46,10 @@ def call(**kwargs):
 def run(*args, **kwargs):
   args = parser.parse_args(*args, **kwargs)
   params = {
-  'params': args.params,
-  'file': args.file,
-  'data': args.data,
-  'encode': args.encode
+    'params': args.params,
+    'file': args.file,
+    'data': args.data,
+    'encode': args.encode
   }
   try:
     result = call(**params)
@@ -56,7 +57,7 @@ def run(*args, **kwargs):
     if args.json is False:
       sys.stderr.write('%s\n' % e.message)
     else:
-      sys.sterr.write('%s\n' %response.Response.as_result(code=e.code, message=e.message, data=e.data).as_json())
+      sys.stderr.write('%s\n' %response.Response.as_error(code=e.code, message=e.message, data=e.data).as_json())
     return
   if args.json is False:
     sys.stdout.write('%s\n' % result)

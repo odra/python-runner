@@ -1,3 +1,4 @@
+import six
 from schematics.types import BaseType
 from schematics.exceptions import ValidationError
 
@@ -10,7 +11,10 @@ class TupleType(BaseType):
 
 class BytesType(BaseType):
   def validate_bytes(self, value):
-    if not type(value) in (str, bytes):
+    colls = [str, bytes]
+    if six.PY2 is True:
+      colls.append(unicode)
+    if not type(value) in colls:
       raise ValidationError('Type must be a valid bytes format')
 
 

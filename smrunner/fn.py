@@ -5,17 +5,17 @@ import json
 from schematics.models import Model
 from schematics.types import IntType, StringType
 from schematics.types.compound import ModelType
+import six
 
 from smrunner.helpers.schema import BytesType, TupleType, LazyDictType
 from smrunner.helpers import encoders
-
 from smrunner import errors
 
 
 CODE_HELPER_PROPS = ('defaults',)
 
 class Code(Model):
-  argcount = IntType(required=True)
+  argcount = IntType(required=True, default=0)
   kwonlyargcount = IntType(default=0)
   cellvars = TupleType(required=True)
   code = BytesType(required=True)
@@ -31,6 +31,20 @@ class Code(Model):
   stacksize = IntType(required=True)
   varnames = TupleType(required=True)
   defaults = TupleType()
+
+  def __init__(self, *args, **kwargs):
+    super(Code, self).__init__(*args, **kwargs)
+    self.fix_props()
+
+  def fix_props(self):
+    if six.PY3 is True and type(self.code) is str:
+      self.code = self.code.encode('utf8')
+    if six.PY3 is True and type(self.lnotab) is str:
+      self.lnotab = self.lnotab.encode('utf8')
+    if six.PY2 is True and type(self.name) is unicode:
+      self.name = self.name.encode('utf8')
+    if six.PY2 is True and type(self.filename) is unicode:
+      self.filename = self.filename.encode('utf8')
 
   @classmethod
   def from_function(cls, fn):
@@ -63,7 +77,6 @@ class Code(Model):
   def as_dict(self, only_code=True):
     data = {
       'argcount': self.argcount,
-      'kwonlyargcount': self.kwonlyargcount,
       'nlocals': self.nlocals,
       'stacksize': self.stacksize,
       'flags': self.flags,
@@ -78,6 +91,8 @@ class Code(Model):
       'freevars': self.freevars,
       'cellvars': self.cellvars
     }
+    if six.PY2 is False:
+      data['kwonlyargcount'] = self.kwonlyargcount
     if only_code is False:
       [data.update({key:getattr(self, key)}) for key in CODE_HELPER_PROPS]
     return data
@@ -85,33 +100,33 @@ class Code(Model):
   def as_json(self, only_code=True):
     BYTES_PROPS = ('code', 'lnotab')
     data = self.as_dict()
-    for bp in BYTES_PROPS:
-      data[bp] = data[bp].decode('utf8')
+    if six.PY3 is True:
+      for bp in BYTES_PROPS:
+        data[bp] = data[bp].decode('utf8')
     return json.dumps(data, only_code)
 
   def as_code(self):
-    if type(self.code) is str:
-      self.code = self.code.encode('utf8')
-    if type(self.lnotab) is str:
-      self.lnotab = self.lnotab.encode('utf8')
+    self.fix_props()
+    data = [self.argcount]
+    if six.PY2 is False:
+      data.append(self.kwonlyargcount)
+    data.extend([
+      self.nlocals,
+      self.stacksize,
+      self.flags,
+      self.code,
+      self.consts,
+      self.names,
+      self.varnames,
+      self.filename,
+      self.name,
+      self.firstlineno,
+      self.lnotab,
+      self.freevars,
+      self.cellvars
+    ])
     try:
-      return types.CodeType(
-        self.argcount,
-        self.kwonlyargcount,
-        self.nlocals,
-        self.stacksize,
-        self.flags,
-        self.code,
-        self.consts,
-        self.names,
-        self.varnames,
-        self.filename,
-        self.name,
-        self.firstlineno,
-        self.lnotab,
-        self.freevars,
-        self.cellvars
-      )
+      return types.CodeType(*data)
     except TypeError as e:
       raise errors.ParseError()
 
@@ -137,6 +152,8 @@ class Function(Model):
     _globals = kwargs.get('globals', {})
     _globals.update(self.get_default_env())
     name = kwargs.get('name', 'fn')
+    if six.PY2 is True:
+      name = name.encode('utf8')
     argdefs = kwargs.get('argdefs', tuple())
     closure = kwargs.get('closure', tuple())
     code = self.code.as_code()

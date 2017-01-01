@@ -1,6 +1,7 @@
 import types
 
 import pytest
+import six
 
 from smrunner.fn import Code
 
@@ -34,7 +35,7 @@ def test_code_object(fn_code):
 def test_code_as_dict(fn):
   code = Code.from_function(fn)
   data = code.as_dict()
-  for (k, v) in data.items():
+  for (k, v) in six.iteritems(data):
     assert v == getattr(fn.__code__, 'co_%s' % k) 
 
 

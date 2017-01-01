@@ -5,6 +5,7 @@ import sys
 import base64
 
 from smrunner import fn, errors, response
+from smrunner.helpers import encoders
 
   
 parser = argparse.ArgumentParser(description='runs a function from file or json data')
@@ -23,12 +24,12 @@ def call(**kwargs):
   fn_name = None
   func = None
   if params is not None and encode is True:
-    params = base64.b64decode(params.encode('utf8')).decode('utf8')
+    params = encoders.decode(params)
   if params is None:
     params = '{}'
   if data is not None:
     if encode is True:
-      data = base64.b64decode(data.encode('utf8')).decode('utf8')
+      data = encoders.decode(data)
     code = fn.Code.from_json(data)
     func = fn.Function.from_code(code)
   if file is not None:
@@ -45,10 +46,10 @@ def call(**kwargs):
 def run(*args, **kwargs):
   args = parser.parse_args(*args, **kwargs)
   params = {
-  'params': args.params,
-  'file': args.file,
-  'data': args.data,
-  'encode': args.encode
+    'params': args.params,
+    'file': args.file,
+    'data': args.data,
+    'encode': args.encode
   }
   try:
     result = call(**params)

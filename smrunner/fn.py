@@ -15,6 +15,9 @@ from smrunner import errors
 CODE_HELPER_PROPS = ('defaults',)
 
 class Code(Model):
+  """
+  Class to store code object properties (schematics model) and merthods.
+  """
   argcount = IntType(required=True, default=0)
   kwonlyargcount = IntType(default=0)
   cellvars = TupleType(required=True)
@@ -37,6 +40,9 @@ class Code(Model):
     self.fix_props()
 
   def fix_props(self):
+    """
+    Fix properties for usage in both python2 and python3.
+    """
     if six.PY3 is True and type(self.code) is str:
       self.code = self.code.encode('utf8')
     if six.PY3 is True and type(self.lnotab) is str:
@@ -48,6 +54,14 @@ class Code(Model):
 
   @classmethod
   def from_function(cls, fn):
+    """
+    Creates a new Code instance based on a function.
+
+    param: fn(Function) - fucntion to be used.
+
+    Returns:
+      A new Code object.
+    """
     code = fn.__code__
     data = {k.replace('co_', ''):getattr(code, k) for k in dir(code) if k.startswith('co_')}
     self = cls(raw_data=data)
@@ -56,6 +70,14 @@ class Code(Model):
 
   @classmethod
   def from_json(cls, data):
+    """
+    Creates a new Code object from a given json string.
+
+    param: data(str) - Json string to be used
+
+    Returns:
+      A new Code object. 
+    """
     try:
       parsed_data = json.loads(data, object_hook=encoders.json_code_hook)
     except ValueError as e:
@@ -65,16 +87,37 @@ class Code(Model):
 
   @classmethod
   def from_file(cls, path):
+    """
+    Creates a new Code object based from a json string written a file.
+
+    param: path(srt) - json file path to be loaded.
+
+    Returns:
+      A new Code instance.
+    """
     try:
       return cls.from_json(open(path).read())
     except IOError as e:
       raise errors.FunctionNotFoundError(path)
 
   def parse_args(self, spec):
+    """
+    Sets defaults args in Code instance based on specs object (from inspect module).
+
+    param: spec(inspect.getargspec) - spec object returned by inspect module.
+    """
     if spec.defaults is not None:
       self.defaults = spec.defaults
 
   def as_dict(self, only_code=True):
+    """
+    Parses code object as dict.
+
+    param: only_code(bool) - Flag to indicate if it should retrieve all fields or only those that belong to __code__.
+
+    Returns:
+      A dict with the instance code fields.
+    """
     data = {
       'argcount': self.argcount,
       'nlocals': self.nlocals,
@@ -98,6 +141,14 @@ class Code(Model):
     return data
 
   def as_json(self, only_code=True):
+    """
+    Parses the Code object as a json string.
+
+    param: only_code(bool) - Flag to indicate if it should retrieve all fields or only those that belong to __code__
+
+    Returns:
+      A json string with the code object fields.
+    """
     BYTES_PROPS = ('code', 'lnotab')
     data = self.as_dict()
     if six.PY3 is True:
@@ -106,6 +157,12 @@ class Code(Model):
     return json.dumps(data, only_code)
 
   def as_code(self):
+    """
+    Parses the Code object as a new CodeType object.
+
+    Returns:
+      A new types.CodeType object.
+    """
     self.fix_props()
     data = [self.argcount]
     if six.PY2 is False:
@@ -132,16 +189,36 @@ class Code(Model):
 
 
 class Function(Model):
+  """
+  Class to store fucntion and its related code. It also runs the functon call.
+  """
   code =  ModelType(Code, required=True)
 
   @classmethod
   def from_code(cls, code):
+    """
+    creates a new Function object from a code object.
+
+    param: code(Code) - Code object to be used.
+
+    Returns:
+      A new Function object.
+    """
     return cls(raw_data={'code': code})
 
   def __call__(self, *args, **kwargs):
+    """
+    Callable python interface, executes the object "run" method.
+    """
     return self.run(*args, **kwargs)
 
   def get_default_env(self):
+    """
+    Define default globals and insert python builtins into the function.
+
+    Returns:
+      A dict with the function globals.
+    """
     _globals = globals()
     env = {
       '__builtins__': _globals['__builtins__']
@@ -149,6 +226,12 @@ class Function(Model):
     return env
 
   def build_fn(self, **kwargs):
+    """
+    Builds the function object (types.FunctionType) based on the instance code property.
+
+    Returns:
+      A new types.FunctionType object.
+    """
     _globals = kwargs.get('globals', {})
     _globals.update(self.get_default_env())
     name = kwargs.get('name', 'fn')
@@ -160,6 +243,14 @@ class Function(Model):
     return types.FunctionType(code, _globals, name, argdefs, closure)
 
   def run(self, *args, **kwargs):
+    """
+    Runs the function object and returns the response.
+
+    Also, it passes and args and kwargs to the function call.
+
+    Returns:
+      The function response.
+    """
     kw = {
       'name': self.code.name
     }

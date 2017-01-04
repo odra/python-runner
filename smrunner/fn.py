@@ -8,7 +8,7 @@ from schematics.types.compound import ModelType
 import six
 
 from smrunner.helpers.schema import BytesType, TupleType, LazyDictType
-from smrunner.helpers import encoders
+from smrunner.helpers import encoders, utils
 from smrunner import errors
 
 
@@ -193,7 +193,7 @@ class Function(Model):
   Class to store fucntion and its related code. It also runs the functon call.
   """
   code =  ModelType(Code, required=True)
-
+  
   @classmethod
   def from_code(cls, code):
     """
@@ -265,3 +265,5 @@ class Function(Model):
         'kwargs': kwargs
       }
       raise errors.RuntimeError(kw['name'], params, str(e))
+    except Exception as e:
+      raise errors.RuntimeError(kw['name'], params, utils.parse_err(e))

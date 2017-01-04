@@ -259,11 +259,9 @@ class Function(Model):
     fn = self.build_fn(**kw)
     try:
       return fn(*args, **kwargs)
-    except TypeError as e:
+    except Exception as e:
       params = {
         'args': args,
         'kwargs': kwargs
       }
-      raise errors.RuntimeError(kw['name'], params, str(e))
-    except Exception as e:
-      raise errors.RuntimeError(kw['name'], params, utils.parse_err(e))
+      raise errors.RuntimeError(kw['name'], params, utils.inspect_err(e))

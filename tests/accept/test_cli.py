@@ -5,9 +5,9 @@ import base64
 
 import pytest
 
-pyrunner = imp.load_source('pyrunner', os.path.abspath('./bin/pyrunner'))
-
 from smrunner import fn
+
+pyrunner = imp.load_source('pyrunner', os.path.abspath('./bin/pyrunner'))
 
 
 @pytest.fixture
@@ -32,6 +32,11 @@ def parser():
 @pytest.fixture
 def func_path():
   return os.path.abspath('./tests/fixtures/func')
+
+
+@pytest.fixture
+def func_error_path():
+  return os.path.abspath('./tests/fixtures/func_error')
 
 
 def test_empty_cli(parser):
@@ -70,8 +75,16 @@ def test_cli_error_from_data(func1, capsys):
   code = fn.Code.from_function(func1)
   args = pyrunner.run(['--data', code.as_json(only_code=False)])
   (out, err) = capsys.readouterr()
-  assert err == 'Runtime error.\n'
+  assert len(err) > 0
   assert out == ''
+
+
+def test_cli_json_error_from_data(func1, capsys):
+  code = fn.Code.from_function(func1)
+  args = pyrunner.run(['--data', code.as_json(only_code=False), '--json'])
+  (out, err) = capsys.readouterr()
+  data = json.loads(err)
+  assert data['error']['data']['trace']['__name__'] == 'TypeError'
 
 
 def test_cli_from_file(func_path, capsys):

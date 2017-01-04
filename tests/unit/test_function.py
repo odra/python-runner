@@ -2,7 +2,14 @@ import types
 
 import pytest
 
-from smrunner.fn import Code, Function
+from smrunner.fn import Code, Function, errors
+
+
+@pytest.fixture
+def fn_error():
+  def fn():
+    return a
+  return fn
 
 
 @pytest.fixture
@@ -72,6 +79,14 @@ def test_hello_world_function(fn):
   func = Function.from_code(Code.from_function(fn))
   func.validate()
   assert func() == 'Hello World!'
+
+
+def test_error_function(fn_error):
+  func = Function.from_code(Code.from_function(fn_error))
+  func.validate()
+  with pytest.raises(errors.RuntimeError) as err:
+    func()
+  assert err.value.as_python()['data']['trace']['__name__'] == 'NameError'
 
 
 def test_arg_function(fn_arg):

@@ -55,7 +55,7 @@ def run(*args, **kwargs):
     result = call(**params)
   except errors.BaseError as e:
     if args.json is False:
-      sys.stderr.write('%s\n' % e.message)
+      sys.stderr.write('%s\n' % e.data['trace']['message'])
     else:
       sys.stderr.write('%s\n' %response.Response.as_error(code=e.code, message=e.message, data=e.data).as_json())
     return
